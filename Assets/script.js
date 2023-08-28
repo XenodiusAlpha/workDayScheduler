@@ -1,7 +1,64 @@
 // Wrap all code that interacts with the DOM in a call to jQuery to ensure that
 // the code isn't run until the browser has finished rendering all the elements
 // in the html.
+
 $(function () {
+  let today = dayjs();
+  let currentHour = dayjs().$H;
+  let storedTaskArr = JSON.parse(localStorage.getItem("Task")) || [];
+  let blockTime = $('.time-block');
+
+  $('#currentDay').text(today.format('dddd, MMMM D'));
+
+
+  const checkTimeColor = () => {
+    for (let i = 0; i < blockTime.length; i++) {
+      if (blockTime[i].id.split('-')[1] < currentHour) {
+        blockTime[i].classList.remove('future');
+        blockTime[i].classList.remove('present');
+        blockTime[i].classList.add('past');
+      }
+      else if (blockTime[i].id.split('-')[1] == currentHour) {
+        blockTime[i].classList.remove('future');
+        blockTime[i].classList.remove('past');
+        blockTime[i].classList.add('present');
+      }
+    }
+  }
+
+  checkTimeColor();
+
+  const saveButton = $('.saveBtn').click(function(event){
+    event.preventDefault();
+    // trim avoids letting a user input a space for text
+    let hourText = $(this).siblings('textarea').val().trim();
+    let timeStamp = $(this).parent('section')[0].id.split('-')[1];
+    if (!hourText){
+      // if hourText is blank, return out of function
+      return;
+    }
+    else {
+      let timeTask = {
+        time : timeStamp,
+        text : hourText
+      };
+      storedTaskArr.push(timeTask);
+      localStorage.setItem('Task', JSON.stringify(storedTaskArr));
+    }
+  });
+
+    const storedLocalValues = () => {
+      for (let j = 0; j<storedTaskArr.length; j++) {
+        let item = storedTaskArr[j];
+        let time = item.time;
+        let text = item.text;
+        $(`section[id="hour-${time}"] textarea`).val(text);
+      }
+    }
+
+  storedLocalValues();
+  
+  
   // TODO: Add a listener for click events on the save button. This code should
   // use the id in the containing time-block as a key to save the user input in
   // local storage. HINT: What does `this` reference in the click listener
